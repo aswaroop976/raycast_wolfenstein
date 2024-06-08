@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_timer.h>
 #include <math.h>
 #include <stdio.h>
@@ -82,6 +83,8 @@ void verLine(SDL_Renderer *renderer, int x, int y1, int y2, SDL_Color color) {
 int main(int argc, char *argv[]) {
   double posX = 22, posY = 12;      // x and y start position
   double dirX = -1, dirY = 0;       // initial direction vector
+  // planeY = 0.66
+  // planeX = 0
   double planeX = 0, planeY = 0.66; // the 2d raycaster version of camera plane
 
   double time = 0;    // time of current frame
@@ -275,6 +278,21 @@ int main(int argc, char *argv[]) {
       double oldPlaneX = planeX;
       planeX = planeX * cos(rotSpeed) - planeY * sin(rotSpeed);
       planeY = oldPlaneX * sin(rotSpeed) + planeY * cos(rotSpeed);
+    }
+    // zoom in
+    double scaling_factor = 1.05;
+    if (state[SDL_SCANCODE_LCTRL] || state[SDL_SCANCODE_LCTRL]){
+      if (state[SDL_SCANCODE_EQUALS]) {
+        planeX = planeX / scaling_factor;
+        planeY = planeY / scaling_factor;
+      }
+    }
+    // zoom out
+    if (state[SDL_SCANCODE_LCTRL] || state[SDL_SCANCODE_LCTRL]){
+      if (state[SDL_SCANCODE_MINUS]) {
+        planeX = planeX * scaling_factor;
+        planeY = planeY * scaling_factor;
+      }
     }
   }
 }
