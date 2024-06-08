@@ -1,8 +1,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #define mapWidth 24
 #define mapHeight 24
@@ -97,14 +97,12 @@ int main(int argc, char *argv[]) {
   while (!done()) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // set draw color to black
     SDL_RenderClear(renderer);                      // Clear the screen
-
     for (int x = 0; x < screenWidth; x++) {
       // calculate ray position and direction
       double cameraX =
           2 * x / (double)screenWidth - 1; // x-coordinate in camera space
       double rayDirX = dirX + planeX * cameraX;
       double rayDirY = dirY + planeY * cameraX;
-
       // which box of the map we're in
       int mapX = (int)posX;
       int mapY = (int)posY;
@@ -166,12 +164,28 @@ int main(int argc, char *argv[]) {
       // were left scaled to |rayDir|. sideDist is the entire length of the ray
       // above after the multiple steps, but we subtract deltaDist once because
       // one step more into the wall was taken above.
-      if (side == 0) {
-        perpWallDist = (sideDistX - deltaDistX);
+      if (argc == 2) {
+        if (strcmp(argv[1], "fisheye") == 0) {
+          double deltaX =
+              ((double)mapX - posX + (double)(1 - stepX) / 2) * (double)rayDirX;
+          double deltaY =
+              ((double)mapY - posY + (double)(1 - stepY) / 2) * (double)rayDirY;
+          perpWallDist = sqrt(deltaX * deltaX + deltaY * deltaY);
+        } else {
+          if (side == 0) {
+            perpWallDist = (sideDistX - deltaDistX);
+          } else {
+            perpWallDist = (sideDistY - deltaDistY);
+          }
+        }
       } else {
-        perpWallDist = (sideDistY - deltaDistY);
+        if (side == 0) {
+          perpWallDist = (sideDistX - deltaDistX);
+        } else {
+          perpWallDist = (sideDistY - deltaDistY);
+        }
       }
-      // calculate height of line to draw on screen
+      //  calculate height of line to draw on screen
       int lineHeight = (int)(screenHeight / perpWallDist);
 
       // calculate lowest and hightest pixel to fill in current stripe
