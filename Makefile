@@ -1,10 +1,10 @@
 # Variables
 CC = gcc
 CFLAGS = `sdl2-config --cflags`
-LDFLAGS = `sdl2-config --libs`
+LDFLAGS = `sdl2-config --libs` -lm
 SRCS = main.c
 OBJS = $(SRCS:.c=.o)
-EXEC = sdl_example
+EXEC = raycast
 
 # Default target
 all: $(EXEC)

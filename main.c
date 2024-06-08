@@ -1,6 +1,9 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_timer.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+
 #define mapWidth 24
 #define mapHeight 24
 #define screenWidth 640
@@ -210,7 +213,54 @@ int main(int argc, char *argv[]) {
       // Draw the pixels of the stripe as a vertical line
       verLine(renderer, x, drawStart, drawEnd, color);
     }
+    // timing for input and FPS counter
+    oldTime = time;
+    time = SDL_GetTicks();
+    double frameTime =
+        (time - oldTime) /
+        1000.0; // frameTime is the time this frame has taken, in seconds
+    char fpsText[64];
+    snprintf(fpsText, sizeof(fpsText), "FPS: %.2f", 1.0 / frameTime);
+    SDL_SetWindowTitle(window, fpsText);
 
     SDL_RenderPresent(renderer); // update the screen
+    double moveSpeed =
+        frameTime * 5.0; // the constant value is in squares/second
+    double rotSpeed =
+        frameTime * 3.0; // the constant value is in radians/second
+
+    const Uint8 *state = SDL_GetKeyboardState(NULL);
+    // move forward if no wall in front of you
+    if (state[SDL_SCANCODE_UP]) {
+      if (worldMap[(int)(posX + dirX * moveSpeed)][(int)posY] == 0)
+        posX += dirX * moveSpeed;
+      if (worldMap[(int)posX][(int)(posY + dirY * moveSpeed)] == 0)
+        posY += dirY * moveSpeed;
+    }
+    // move backwards if no wall behind you
+    if (state[SDL_SCANCODE_DOWN]) {
+      if (worldMap[(int)(posX - dirX * moveSpeed)][(int)posY] == 0)
+        posX -= dirX * moveSpeed;
+      if (worldMap[(int)posX][(int)(posY - dirY * moveSpeed)] == 0)
+        posY -= dirY * moveSpeed;
+    }
+    // rotate to the right
+    if (state[SDL_SCANCODE_RIGHT]) {
+      double oldDirX = dirX;
+      dirX = dirX * cos(-rotSpeed) - dirY * sin(-rotSpeed);
+      dirY = oldDirX * sin(-rotSpeed) + dirY * cos(-rotSpeed);
+      double oldPlaneX = planeX;
+      planeX = planeX * cos(-rotSpeed) - planeY * sin(-rotSpeed);
+      planeY = oldPlaneX * sin(-rotSpeed) + planeY * cos(-rotSpeed);
+    }
+    // rotate to the left
+    if (state[SDL_SCANCODE_LEFT]) {
+      double oldDirX = dirX;
+      dirX = dirX * cos(rotSpeed) - dirY * sin(rotSpeed);
+      dirY = oldDirX * sin(rotSpeed) + dirY * cos(rotSpeed);
+      double oldPlaneX = planeX;
+      planeX = planeX * cos(rotSpeed) - planeY * sin(rotSpeed);
+      planeY = oldPlaneX * sin(rotSpeed) + planeY * cos(rotSpeed);
+    }
   }
 }
