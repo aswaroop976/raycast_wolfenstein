@@ -1,7 +1,7 @@
 Ray cast implementation similar to the game wolfenstein 3d
 To compile untextured navigate to the untextured directory and run "make". Then run "./raycast".
-Use arrow keys to navigate map
-use "ctrl +" or "ctrl -" to change FOV(zoom in and out).
+Use arrow keys to navigate map.
+Use "ctrl +" or "ctrl -" to change FOV(zoom in and out).
 you can also try fisheye mode by running "./raycast fisheye"
 
 Still working on the textured version
