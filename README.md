@@ -7,6 +7,6 @@ you can also try fisheye mode by running "./raycast fisheye"
 Still working on the textured version
 
 inspired by: https://lodev.org/cgtutor/raycasting.html 
-(most of the math was from the article above)
+(most of the math was from the article here)
 
-My implementation is done entirely in C from scratch only using the SDL library
+My implementation is done entirely in C from scratch, only using the SDL library
