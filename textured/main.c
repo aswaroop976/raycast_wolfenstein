@@ -83,8 +83,22 @@ void verLine(SDL_Renderer *renderer, int x, int y1, int y2, SDL_Color color) {
   SDL_RenderDrawLine(renderer, x, y1, x, y2);
 }
 
+void drawBuffer(SDL_Renderer *renderer,
+                uint32_t buffer[screenHeight][screenWidth]) {
+  for (int y = 0; y < screenHeight; y++) {
+    for (int x = 0; x < screenWidth; x++) {
+      uint32_t color = buffer[y][x];
+      uint8_t r = (color >> 16) & 0xff;
+      uint8_t g = (color >> 8) & 0xff;
+      uint8_t b = color & 0xff;
+      SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+      SDL_RenderDrawPoint(renderer, x, y);
+    }
+  }
+}
+
 int main(int argc, char *argv[]) {
-  double posX = 22, posY = 12; // x and y start position
+  double posX = 22, posY = 11.5; // x and y start position
   double dirX = -1, dirY = 0;  // initial direction vector
   // planeY = 0.66
   // planeX = 0
@@ -139,8 +153,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   while (!done()) {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // set draw color to black
-    SDL_RenderClear(renderer);                      // Clear the screen
+   // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // set draw color to black
+   // SDL_RenderClear(renderer);                      // Clear the screen
     for (int x = 0; x < screenWidth; x++) {
       // calculate ray position and direction
       double cameraX =
@@ -257,38 +271,66 @@ int main(int argc, char *argv[]) {
       // x coordinate on the texture
       int texX = (int)(wallX * (double)(texWidth));
       if (side == 0 && rayDirX > 0)
-        texX = texWidth - texX - 1; // if the ray is hitting a vertical wall from the left, the texture should be mirrored horizontally. This is done by flipping the x-coordinate
+        texX = texWidth - texX -
+               1; // if the ray is hitting a vertical wall from the left, the
+                  // texture should be mirrored horizontally. This is done by
+                  // flipping the x-coordinate
       if (side == 1 && rayDirY < 0)
-        texX = texWidth - texX - 1; // if the ray is hitting a horizontal wall from below, the texture should also be mirrored horizontally
-
-      SDL_Color color;
-      switch (worldMap[mapX][mapY]) {
-      case 1:
-        color = (SDL_Color){255, 0, 0, 255};
-        break; // Red
-      case 2:
-        color = (SDL_Color){0, 255, 0, 255};
-        break; // Green
-      case 3:
-        color = (SDL_Color){0, 0, 255, 255};
-        break; // Blue
-      case 4:
-        color = (SDL_Color){255, 255, 255, 255};
-        break; // White
-      default:
-        color = (SDL_Color){255, 255, 0, 255};
-        break; // Yellow
+        texX = texWidth - texX -
+               1; // if the ray is hitting a horizontal wall from below, the
+                  // texture should also be mirrored horizontally
+      // how much to increase the texture coordinate per screen pixel
+      double step = 1.0 * texHeight / lineHeight;
+      // starting texture coordinate
+      double texPos =
+          (drawStart - (double)screenHeight / 2 + (double)lineHeight / 2) *
+          step;
+      for (int y = drawStart; y < drawEnd; y++) {
+        // cast the texture coordinate to integer, and mask with (texHeight - 1)
+        // in case of overflow
+        int texY = (int)texPos & (texHeight - 1);
+        texPos += step;
+        uint32_t color = texture[texNum][texHeight * texY + texX];
+        // make color darker for y-sides: R, G, and B byte each divided through
+        // 2 with a "shift" and an "and"
+        if (side == 1)
+          color = (color >> 1) & 8355711;
+        buffer[y][x] = color;
       }
+      // SDL_Color color;
+      // switch (worldMap[mapX][mapY]) {
+      // case 1:
+      //   color = (SDL_Color){255, 0, 0, 255};
+      //   break; // Red
+      // case 2:
+      //   color = (SDL_Color){0, 255, 0, 255};
+      //   break; // Green
+      // case 3:
+      //   color = (SDL_Color){0, 0, 255, 255};
+      //   break; // Blue
+      // case 4:
+      //   color = (SDL_Color){255, 255, 255, 255};
+      //   break; // White
+      // default:
+      //   color = (SDL_Color){255, 255, 0, 255};
+      //   break; // Yellow
+      // }
 
-      // Give x and y sides different brightness
-      if (side == 1) {
-        color.r /= 2;
-        color.g /= 2;
-        color.b /= 2;
+      // // Give x and y sides different brightness
+      // if (side == 1) {
+      //   color.r /= 2;
+      //   color.g /= 2;
+      //   color.b /= 2;
+      // }
+
+      // // Draw the pixels of the stripe as a vertical line
+      // verLine(renderer, x, drawStart, drawEnd, color);
+    }
+    drawBuffer(renderer, buffer);
+    for(int y = 0; y < screenHeight; y++) {
+      for(int x = 0; x < screenWidth; x++) {
+        buffer[y][x] = 0;
       }
-
-      // Draw the pixels of the stripe as a vertical line
-      verLine(renderer, x, drawStart, drawEnd, color);
     }
     // timing for input and FPS counter
     oldTime = time;
