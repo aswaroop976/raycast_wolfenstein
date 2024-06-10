@@ -2,6 +2,7 @@
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_timer.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,32 +10,34 @@
 #define mapHeight 24
 #define screenWidth 640
 #define screenHeight 480
+#define texWidth 64
+#define texHeight 64
 
 int worldMap[mapWidth][mapHeight] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 3, 0, 3, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2, 0, 0, 0, 0, 3, 0, 3, 0, 3, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 4, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 4, 0, 0, 0, 0, 5, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 4, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 4, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+    {4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 7, 7, 7, 7},
+    {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 7},
+    {4, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7},
+    {4, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7},
+    {4, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 7},
+    {4, 0, 4, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 0, 7, 7, 7, 7, 7},
+    {4, 0, 5, 0, 0, 0, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 7, 0, 0, 0, 7, 7, 7, 1},
+    {4, 0, 6, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0, 0, 0, 0, 0, 0, 8},
+    {4, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 1},
+    {4, 0, 8, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0, 0, 0, 0, 0, 0, 8},
+    {4, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0, 0, 0, 7, 7, 7, 1},
+    {4, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 1},
+    {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6},
+    {8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4},
+    {6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6},
+    {4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 6, 0, 6, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3},
+    {4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2},
+    {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 2, 0, 0, 5, 0, 0, 2, 0, 0, 0, 2},
+    {4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2},
+    {4, 0, 6, 0, 6, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 2},
+    {4, 0, 0, 5, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2},
+    {4, 0, 6, 0, 6, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 5, 0, 0, 2, 0, 0, 0, 2},
+    {4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2},
+    {4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3}};
 
 int screen(int width, int height, int fullscreen, const char *title,
            SDL_Window **window, SDL_Renderer **renderer) {
@@ -81,14 +84,52 @@ void verLine(SDL_Renderer *renderer, int x, int y1, int y2, SDL_Color color) {
 }
 
 int main(int argc, char *argv[]) {
-  double posX = 22, posY = 12;      // x and y start position
-  double dirX = -1, dirY = 0;       // initial direction vector
+  double posX = 22, posY = 12; // x and y start position
+  double dirX = -1, dirY = 0;  // initial direction vector
   // planeY = 0.66
   // planeX = 0
   double planeX = 0, planeY = 0.66; // the 2d raycaster version of camera plane
 
   double time = 0;    // time of current frame
   double oldTime = 0; // time of previous frame
+
+  uint32_t buffer[screenHeight][screenWidth]; // y-coordinate first because it
+                                              // works per scanline
+
+  // texture array
+  uint32_t *texture[8];
+  for (int i = 0; i < 8; i++) {
+    texture[i] = (uint32_t *)malloc(texWidth * texHeight * sizeof(uint32_t));
+    if (!texture[i]) {
+      fprintf(stderr, "Failed to allocate memory for texture %d\n", i);
+      return 1;
+    }
+  }
+
+  // Generate some textures
+  for (int x = 0; x < texWidth; x++) {
+    for (int y = 0; y < texHeight; y++) {
+      int xorcolor = (x * 256 / texWidth) ^ (y * 256 / texHeight);
+      int ycolor = y * 256 / texHeight;
+      int xycolor = y * 128 / texHeight + x * 128 / texWidth;
+
+      texture[0][texWidth * y + x] =
+          65536 * 254 *
+          (x != y && x != texWidth - y); // flat red texture with black cross
+      texture[1][texWidth * y + x] =
+          xycolor + 256 * xycolor + 65536 * xycolor; // sloped greyscale
+      texture[2][texWidth * y + x] =
+          256 * xycolor + 65536 * xycolor; // sloped yellow gradient
+      texture[3][texWidth * y + x] =
+          xorcolor + 256 * xorcolor + 65536 * xorcolor; // xor greyscale
+      texture[4][texWidth * y + x] = 256 * xorcolor;    // xor green
+      texture[5][texWidth * y + x] =
+          65536 * 192 * (x % 16 && y % 16);          // red bricks
+      texture[6][texWidth * y + x] = 65536 * ycolor; // red gradient
+      texture[7][texWidth * y + x] =
+          128 + 256 * 128 + 65536 * 128; // flat grey texture
+    }
+  }
 
   SDL_Window *window = NULL;
   SDL_Renderer *renderer = NULL;
@@ -201,6 +242,25 @@ int main(int argc, char *argv[]) {
         drawEnd = screenHeight - 1;
       }
 
+      // texturing calculations
+      int texNum = worldMap[mapX][mapY] -
+                   1; // 1 subtracted from it so that texture 0 can be used
+
+      // calculate vale of wallX
+      double wallX; // where exactly the wall was hit
+      if (side == 0)
+        wallX = posY + perpWallDist * rayDirY;
+      else
+        wallX = posX + perpWallDist * rayDirX;
+      wallX -= floor((wallX));
+
+      // x coordinate on the texture
+      int texX = (int)(wallX * (double)(texWidth));
+      if (side == 0 && rayDirX > 0)
+        texX = texWidth - texX - 1; // if the ray is hitting a vertical wall from the left, the texture should be mirrored horizontally. This is done by flipping the x-coordinate
+      if (side == 1 && rayDirY < 0)
+        texX = texWidth - texX - 1; // if the ray is hitting a horizontal wall from below, the texture should also be mirrored horizontally
+
       SDL_Color color;
       switch (worldMap[mapX][mapY]) {
       case 1:
@@ -281,18 +341,21 @@ int main(int argc, char *argv[]) {
     }
     // zoom in
     double scaling_factor = 1.05;
-    if (state[SDL_SCANCODE_LCTRL] || state[SDL_SCANCODE_LCTRL]){
+    if (state[SDL_SCANCODE_LCTRL] || state[SDL_SCANCODE_LCTRL]) {
       if (state[SDL_SCANCODE_EQUALS]) {
         planeX = planeX / scaling_factor;
         planeY = planeY / scaling_factor;
       }
     }
     // zoom out
-    if (state[SDL_SCANCODE_LCTRL] || state[SDL_SCANCODE_LCTRL]){
+    if (state[SDL_SCANCODE_LCTRL] || state[SDL_SCANCODE_LCTRL]) {
       if (state[SDL_SCANCODE_MINUS]) {
         planeX = planeX * scaling_factor;
         planeY = planeY * scaling_factor;
       }
     }
+  }
+  for (int i = 0; i < 8; i++) {
+    free(texture[i]);
   }
 }
